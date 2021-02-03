@@ -974,6 +974,7 @@ func (p *ACIProvider) RunInContainer(ctx context.Context, namespace, name, conta
 		defer out.Close()
 	}
 
+  log.G(ctx).Infof("[debug]: RunInContainer, %s, %s, %s, %v", namespace, name, container, cmd)
 	cg, err := p.getContainerGroup(ctx, namespace, name)
 	if err != nil {
 		return err
