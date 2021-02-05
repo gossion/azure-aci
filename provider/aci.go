@@ -1005,14 +1005,14 @@ func (p *ACIProvider) RunInContainer(ctx context.Context, namespace, name, conta
 	wsURI := xcrsp.WebSocketURI
 	password := xcrsp.Password
 
-	h := http.Header{
-		"Authorization": {fmt.Sprintf("Bearer %s", password)},
-	}
-	c, _, _ := websocket.DefaultDialer.Dial(wsURI, h)
-	// if err := c.WriteMessage(websocket.TextMessage, []byte(password)); err != nil { // Websocket password needs to be sent before WS terminal is active
-	// 	panic(err)
+	// h := http.Header{
+	// 	"Authorization": {fmt.Sprintf("Bearer %s", password)},
 	// }
-	log.G(ctx).Info("[DEBUG]Bearer wsURI: %s, %s", xcrsp.WebSocketURI, xcrsp.Password)
+	c, _, _ := websocket.DefaultDialer.Dial(wsURI, nil)
+	if err := c.WriteMessage(websocket.TextMessage, []byte(password)); err != nil { // Websocket password needs to be sent before WS terminal is active
+		panic(err)
+	}
+	log.G(ctx).Info("[DEBUG] No Bearer wsURI: %s, %s", xcrsp.WebSocketURI, xcrsp.Password)
 
 	// Cleanup on exit
 	defer c.Close()
@@ -1032,10 +1032,11 @@ func (p *ACIProvider) RunInContainer(ctx context.Context, namespace, name, conta
 				n, err := in.Read(msg)
 				if err != nil {
 					// Handle errors
+					log.G(ctx).Info("[DEBUG]In err", err)
 					return
 				}
 				if n > 0 { // Only call WriteMessage if there is data to send
-					log.G(ctx).Infof("[DEBUG]Write %d", n)
+					log.G(ctx).Infof("[DEBUG]Write %d, %s", n, string(msg[:n]))
 					if err := c.WriteMessage(websocket.BinaryMessage, msg[:n]); err != nil {
 						panic(err)
 					}
@@ -1056,6 +1057,7 @@ func (p *ACIProvider) RunInContainer(ctx context.Context, namespace, name, conta
 
 			_, cr, err := c.NextReader()
 			if err != nil {
+				log.G(ctx).Info("[O]error:", err)
 				// Handle errors
 				break
 			}
