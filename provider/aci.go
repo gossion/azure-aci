@@ -48,6 +48,11 @@ const (
 	virtualKubeletDNSNameLabel = "virtualkubelet.io/dnsnamelabel"
 
 	subnetDelegationService = "Microsoft.ContainerInstance/containerGroups"
+
+	azureCSIDriverName               = "file.csi.azure.com"
+	secretKeyAzureStorageAccountName = "azurestorageaccountname"
+	secretKeyAzureStorageAccountKey  = "azurestorageaccountkey"
+	volumeAttributesKeyShareName     = "shareName"
 )
 
 // DNS configuration settings
@@ -1626,8 +1631,8 @@ func (p *ACIProvider) getVolumes(pod *v1.Pod) ([]aci.Volume, error) {
 				AzureFile: &aci.AzureFileVolume{
 					ShareName:          v.AzureFile.ShareName,
 					ReadOnly:           v.AzureFile.ReadOnly,
-					StorageAccountName: string(secret.Data["azurestorageaccountname"]),
-					StorageAccountKey:  string(secret.Data["azurestorageaccountkey"]),
+					StorageAccountName: string(secret.Data[secretKeyAzureStorageAccountName]),
+					StorageAccountKey:  string(secret.Data[secretKeyAzureStorageAccountKey]),
 				},
 			})
 			continue
@@ -1704,6 +1709,54 @@ func (p *ACIProvider) getVolumes(pod *v1.Pod) ([]aci.Volume, error) {
 				})
 			}
 			continue
+		}
+
+		if v.PersistentVolumeClaim != nil {
+			pvc, err := p.resourceManager.GetPersistentVolumeClaim(v.PersistentVolumeClaim.ClaimName, pod.Namespace)
+			if err != nil {
+				return nil, fmt.Errorf("GetPersistentVolumeClaim returned error: %s", err)
+			}
+			pv, err := p.resourceManager.GetPersistentVolume(pvc.Spec.VolumeName)
+			if err != nil {
+				return nil, fmt.Errorf("GetPersistentVolume returned error: %s", err)
+			}
+
+			if pv.Spec.CSI != nil &&
+				pv.Spec.CSI.NodeStageSecretRef != nil && //only the static pv is supported
+				strings.EqualFold(pv.Spec.CSI.Driver, azureCSIDriverName) {
+				secret, err := p.resourceManager.GetSecret(pv.Spec.CSI.NodeStageSecretRef.Name, pv.Spec.CSI.NodeStageSecretRef.Namespace)
+				if err != nil {
+					return nil, fmt.Errorf("Get secret for CSI volume returned error: %s", err)
+				}
+				if secret == nil {
+					return nil, fmt.Errorf("Getting secret for CSI volume returned an empty secret")
+				}
+				var storageAccountName, storageAccountKey, shareName string
+				if v, ok := secret.Data[secretKeyAzureStorageAccountName]; ok {
+					storageAccountName = string(v)
+				}
+				if v, ok := secret.Data[secretKeyAzureStorageAccountKey]; ok {
+					storageAccountKey = string(v)
+				}
+				if v, ok := pv.Spec.CSI.VolumeAttributes[volumeAttributesKeyShareName]; ok {
+					shareName = v
+				}
+				if storageAccountName == "" || storageAccountKey == "" || shareName == "" {
+					return nil, fmt.Errorf("either one of storageAccountName: %s, storageAccountKey: <Redacted>, shareName: %s is empty", storageAccountName, shareName)
+				}
+				volumes = append(volumes, aci.Volume{
+					Name: v.Name,
+					AzureFile: &aci.AzureFileVolume{
+						ShareName:          shareName,
+						ReadOnly:           pv.Spec.CSI.ReadOnly,
+						StorageAccountName: storageAccountName,
+						StorageAccountKey:  storageAccountKey,
+					},
+				})
+				continue
+			} else {
+				return nil, errors.New("only static pv with azure csi driver is supported currently")
+			}
 		}
 
 		// If we've made it this far we have found a volume type that isn't supported

@@ -334,6 +334,8 @@ github.com/gorilla/mux v1.7.3/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2z
 github.com/gorilla/websocket v0.0.0-20170926233335-4201258b820c/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
 github.com/gorilla/websocket v1.4.0 h1:WDFjx/TMzVgy9VdMMQi2K2Emtwi2QcUQsztZ/zLaH/Q=
 github.com/gorilla/websocket v1.4.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
+github.com/gossion/node-cli v0.4.1-0.20210209061724-9df69ac1c7b6 h1:Nsh3CNEsJT1tr4TA0WLHAj4ZhWggzRX+Gn8ieZgPnUo=
+github.com/gossion/node-cli v0.4.1-0.20210209061724-9df69ac1c7b6/go.mod h1:eqHxczlzLL3e8V/Um84jXed1OAVQ/O+r+GsmLSghUl8=
 github.com/gostaticanalysis/analysisutil v0.0.0-20190318220348-4088753ea4d3/go.mod h1:eEOZF4jCKGi+aprrirO9e7WKB3beBRtWgqGunKl6pKE=
 github.com/gostaticanalysis/analysisutil v0.0.3/go.mod h1:eEOZF4jCKGi+aprrirO9e7WKB3beBRtWgqGunKl6pKE=
 github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7/go.mod h1:FecbI9+v66THATjSRHfNgh1IVFe/9kFxbXtjV0ctIMA=
@@ -602,8 +604,6 @@ github.com/valyala/fasthttp v1.2.0/go.mod h1:4vX61m6KN+xDduDNwXrhIAVZaZaZiQ1luJk
 github.com/valyala/quicktemplate v1.1.1/go.mod h1:EH+4AkTd43SvgIbQHYu59/cJyxDoOVRUAfrukLPuGJ4=
 github.com/valyala/tcplisten v0.0.0-20161114210144-ceec8f93295a/go.mod h1:v3UYOV9WzVtRmSR+PDvWpU/qWl4Wa5LApYYX4ZtKbio=
 github.com/vektah/gqlparser v1.1.2/go.mod h1:1ycwN7Ij5njmMkPPAOaRFY4rET2Enx7IkVv3vaXspKw=
-github.com/virtual-kubelet/node-cli v0.5.1 h1:GvgZ6egtrb5PzmIarwtk07fvlc852hXzMBvqkF7R1Pw=
-github.com/virtual-kubelet/node-cli v0.5.1/go.mod h1:eqHxczlzLL3e8V/Um84jXed1OAVQ/O+r+GsmLSghUl8=
 github.com/virtual-kubelet/virtual-kubelet v1.3.0 h1:ixQRrPcVcRHoMO0WcQolyOs/ScZqa7kryYBiZE3Xa94=
 github.com/virtual-kubelet/virtual-kubelet v1.3.0/go.mod h1:kuDs8O1dU0pLMLxzx7zvf4haeS6jB3YMbD73zWe1sV4=
 github.com/vishvananda/netlink v1.0.0/go.mod h1:+SR5DhBJrl6ZM7CoCKvpw5BKroDKQ+PJqOg65H/2ktk=

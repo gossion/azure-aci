@@ -27,6 +27,8 @@ require (
 	k8s.io/kubernetes v1.18.4
 )
 
+replace github.com/virtual-kubelet/node-cli => github.com/gossion/node-cli v0.4.1-0.20210209061724-9df69ac1c7b6
+
 replace k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.18.4
 
 replace k8s.io/cloud-provider => k8s.io/cloud-provider v0.18.4
