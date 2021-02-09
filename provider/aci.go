@@ -681,10 +681,16 @@ func (p *ACIProvider) CreatePod(ctx context.Context, pod *v1.Pod) error {
 			})
 		}
 	}
+	var ipAddressType string
+	if p.subnetName == "" {
+		ipAddressType = "Public"
+	} else {
+		ipAddressType = "Private"
+	}
 	if len(ports) > 0 && p.subnetName == "" {
 		containerGroup.ContainerGroupProperties.IPAddress = &aci.IPAddress{
 			Ports: ports,
-			Type:  "Public",
+			Type:  ipAddressType,
 		}
 
 		if dnsNameLabel := pod.Annotations[virtualKubeletDNSNameLabel]; dnsNameLabel != "" {
