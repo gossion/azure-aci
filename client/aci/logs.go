@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 
+	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	"github.com/virtual-kubelet/azure-aci/client/api"
 )
 
@@ -28,7 +28,7 @@ func (c *Client) GetContainerLogs(ctx context.Context, resourceGroup, containerG
 	uri += "?" + url.Values(urlParams).Encode()
 
 	// Create the request.
-	req, err := http.NewRequest("GET", uri, nil)
+	req, err := retryablehttp.NewRequest("GET", uri, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Creating get container logs uri request failed: %v", err)
 	}
@@ -45,7 +45,7 @@ func (c *Client) GetContainerLogs(ctx context.Context, resourceGroup, containerG
 	}
 
 	// Send the request.
-	resp, err := c.hc.Do(req)
+	resp, err := c.rc.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Sending get container logs request failed: %v", err)
 	}

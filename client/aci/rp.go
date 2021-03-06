@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 
+	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	"github.com/virtual-kubelet/azure-aci/client/api"
 )
 
@@ -45,14 +45,14 @@ func (c *Client) getResourceProviderManifest(ctx context.Context) (*ResourceProv
 	uri += "?" + url.Values(urlParams).Encode()
 
 	// Create the request.
-	req, err := http.NewRequest("GET", uri, nil)
+	req, err := retryablehttp.NewRequest("GET", uri, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Creating get resource provider manifest request failed: %v", err)
 	}
 	req = req.WithContext(ctx)
 
 	// Send the request.
-	resp, err := c.hc.Do(req)
+	resp, err := c.rc.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Sending get resource provider manifest request failed: %v", err)
 	}

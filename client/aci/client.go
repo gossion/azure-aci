@@ -2,13 +2,18 @@ package aci
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"time"
 
 	"go.opencensus.io/plugin/ochttp/propagation/b3"
 
 	"go.opencensus.io/plugin/ochttp"
 
 	azure "github.com/virtual-kubelet/azure-aci/client"
+
+	retryablehttp "github.com/hashicorp/go-retryablehttp"
 )
 
 const (
@@ -30,6 +35,7 @@ const (
 type Client struct {
 	hc   *http.Client
 	auth *azure.Authentication
+	rc   retryablehttp.Client
 }
 
 // NewClient creates a new Azure Container Instances client with extra user agent.
@@ -54,5 +60,51 @@ func NewClient(auth *azure.Authentication, extraUserAgent string) (*Client, erro
 		NewClientTrace: ochttp.NewSpanAnnotatingClientTrace,
 	}
 
-	return &Client{hc: client.HTTPClient, auth: auth}, nil
+	return &Client{
+		hc:   client.HTTPClient,
+		auth: auth,
+		rc: retryablehttp.Client{
+			HTTPClient:   hc,
+			Logger:       defaultLogger,
+			RetryWaitMin: defaultRetryWaitMin,
+			RetryWaitMax: defaultRetryWaitMax,
+			RetryMax:     defaultRetryMax,
+			CheckRetry:   retryablehttp.DefaultRetryPolicy,
+			Backoff:      retryablehttp.DefaultBackoff,
+		}}, nil
 }
+
+var (
+	defaultRetryWaitMin = 1 * time.Second
+	defaultRetryWaitMax = 30 * time.Second
+	defaultRetryMax     = 4
+
+	// defaultLogger is the logger provided with defaultClient
+	defaultLogger = log.New(os.Stderr, "", log.LstdFlags)
+)
+
+const (
+	// DefaultPollingDelay is a reasonable delay between polling requests.
+	DefaultPollingDelay = 60 * time.Second
+
+	// DefaultPollingDuration is a reasonable total polling duration.
+	DefaultPollingDuration = 15 * time.Minute
+
+	// DefaultRetryAttempts is number of attempts for retry status codes (5xx).
+	DefaultRetryAttempts = 3
+
+	// DefaultRetryDuration is the duration to wait between retries.
+	DefaultRetryDuration = 30 * time.Second
+)
+
+var (
+	// StatusCodesForRetry are a defined group of status code for which the client will retry
+	StatusCodesForRetry = []int{
+		http.StatusRequestTimeout,      // 408
+		http.StatusTooManyRequests,     // 429
+		http.StatusInternalServerError, // 500
+		http.StatusBadGateway,          // 502
+		http.StatusServiceUnavailable,  // 503
+		http.StatusGatewayTimeout,      // 504
+	}
+)

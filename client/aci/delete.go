@@ -3,9 +3,9 @@ package aci
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"net/url"
 
+	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	"github.com/virtual-kubelet/azure-aci/client/api"
 )
 
@@ -22,7 +22,7 @@ func (c *Client) DeleteContainerGroup(ctx context.Context, resourceGroup, contai
 	uri += "?" + url.Values(urlParams).Encode()
 
 	// Create the request.
-	req, err := http.NewRequest("DELETE", uri, nil)
+	req, err := retryablehttp.NewRequest("DELETE", uri, nil)
 	if err != nil {
 		return fmt.Errorf("Creating delete container group uri request failed: %v", err)
 	}
@@ -38,7 +38,7 @@ func (c *Client) DeleteContainerGroup(ctx context.Context, resourceGroup, contai
 	}
 
 	// Send the request.
-	resp, err := c.hc.Do(req)
+	resp, err := c.rc.Do(req)
 	if err != nil {
 		return fmt.Errorf("Sending delete container group request failed: %v", err)
 	}

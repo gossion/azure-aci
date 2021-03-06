@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 
+	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	"github.com/virtual-kubelet/azure-aci/client/api"
 )
 
@@ -44,7 +44,7 @@ func (c *Client) LaunchExec(resourceGroup, containerGroupName, containerName, co
 		return xcrsp, fmt.Errorf("Encoding create launch exec body request failed: %v", err)
 	}
 
-	req, err := http.NewRequest("POST", uri, b)
+	req, err := retryablehttp.NewRequest("POST", uri, b)
 	if err != nil {
 		return xcrsp, fmt.Errorf("Creating launch exec uri request failed: %v", err)
 	}
@@ -60,7 +60,7 @@ func (c *Client) LaunchExec(resourceGroup, containerGroupName, containerName, co
 	}
 
 	// Send the request.
-	resp, err := c.hc.Do(req)
+	resp, err := c.rc.Do(req)
 	if err != nil {
 		return xcrsp, fmt.Errorf("Sending launch exec request failed: %v", err)
 	}

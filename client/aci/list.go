@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 
+	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	"github.com/virtual-kubelet/azure-aci/client/api"
 )
 
@@ -32,7 +32,7 @@ func (c *Client) ListContainerGroups(ctx context.Context, resourceGroup string) 
 	uri += "?" + url.Values(urlParams).Encode()
 
 	// Create the request.
-	req, err := http.NewRequest("GET", uri, nil)
+	req, err := retryablehttp.NewRequest("GET", uri, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Creating get container group list uri request failed: %v", err)
 	}
@@ -47,7 +47,7 @@ func (c *Client) ListContainerGroups(ctx context.Context, resourceGroup string) 
 	}
 
 	// Send the request.
-	resp, err := c.hc.Do(req)
+	resp, err := c.rc.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Sending get container group list request failed: %v", err)
 	}

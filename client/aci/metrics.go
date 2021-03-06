@@ -3,11 +3,11 @@ package aci
 import (
 	"context"
 	"encoding/json"
-	"net/http"
 	"net/url"
 	"path"
 	"time"
 
+	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	"github.com/pkg/errors"
 	"github.com/virtual-kubelet/azure-aci/client/api"
 )
@@ -57,7 +57,7 @@ func (c *Client) GetContainerGroupMetrics(ctx context.Context, resourceGroup, co
 	uri += "?" + url.Values(urlParams).Encode()
 
 	// Create the request.
-	req, err := http.NewRequest("GET", uri, nil)
+	req, err := retryablehttp.NewRequest("GET", uri, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "creating get container group metrics uri request failed")
 	}
@@ -73,7 +73,7 @@ func (c *Client) GetContainerGroupMetrics(ctx context.Context, resourceGroup, co
 	}
 
 	// Send the request.
-	resp, err := c.hc.Do(req)
+	resp, err := c.rc.Do(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "sending get container group metrics request failed")
 	}
